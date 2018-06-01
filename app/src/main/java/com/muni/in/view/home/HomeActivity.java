@@ -3,14 +3,20 @@ package com.muni.in.view.home;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -38,7 +44,8 @@ import com.muni.in.view.restaurant_onboard.RestaurantRegFragment;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, ResponseListener {
+        implements NavigationView.OnNavigationItemSelectedListener, ResponseListener,
+                    RestaurantAdapter.searchSelectionListener{
 
     private ActionBarDrawerToggle toggle;
     private Toolbar toolbar;
@@ -47,6 +54,7 @@ public class HomeActivity extends AppCompatActivity
     private String TAG = getClass().getName();
     private RecyclerView restaurantRecycleView;
     public RestaurantAdapter adapter;
+    private SearchView searchView;
 
     @Override
     protected void onStart() {
@@ -72,10 +80,12 @@ public class HomeActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         restaurantRecycleView = (RecyclerView) findViewById(R.id.restaurantRecycler);
+        //whiteNotificationBar(restaurantRecycleView);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         restaurantRecycleView.setLayoutManager(mLayoutManager);
         restaurantRecycleView.setHasFixedSize(true);
         restaurantRecycleView.setItemAnimator(new DefaultItemAnimator());
+
 
         //showProgress(true);
         new Client(this, this).getRestaurants(sharedPreferences.getAccessToken());
@@ -108,6 +118,10 @@ public class HomeActivity extends AppCompatActivity
                     showUpButton(false,Toggle.CLOSE);
                 }
             } else {
+                if (!searchView.isIconified()) {
+                    searchView.setIconified(true);
+                    return;
+                }
                 super.onBackPressed();
             }
         }
@@ -118,8 +132,29 @@ public class HomeActivity extends AppCompatActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.home, menu);
         //invalidateOptionsMenu();
-        //MenuItem item = menu.findItem(R.id.action_settings);
+        MenuItem searchitem = menu.findItem(R.id.action_search);
         //item.setVisible(false);
+        SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
+        if (searchitem != null)
+        searchView = (SearchView) MenuItemCompat.getActionView(searchitem);
+        if(searchView != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            searchView.setMaxWidth(Integer.MAX_VALUE);
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    adapter.getFilter().filter(query);
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    adapter.getFilter().filter(newText);
+                    return false;
+                }
+            });
+        }
+
         return true;
     }
 
@@ -135,13 +170,14 @@ public class HomeActivity extends AppCompatActivity
 //            return true;
 //        }
         if (id == R.id.action_search) {
-            Toast.makeText(this, "Not Available", Toast.LENGTH_LONG).show();
+            //Toast.makeText(this, "Not Available", Toast.LENGTH_LONG).show();
+            return true;
         }
         if (id == R.id.action_add) {
             //Toast.makeText(this, "Add Res", Toast.LENGTH_LONG).show();
             replaceFragment();
         }
-
+//        searchView.setOnQueryTextListener(queryTextListener);
         return super.onOptionsItemSelected(item);
     }
 
@@ -187,7 +223,6 @@ public class HomeActivity extends AppCompatActivity
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.setCustomAnimations(R.anim.slide_enter, R.anim.slide_exit, R.anim.slide_reverse_exit, R.anim.slide_reverse_enter);
         transaction.replace(R.id.frag_container, new RestaurantRegFragment(), "Myfrag").addToBackStack(null).commit();
-
         // The part that changes the hamburger icon to the up icon
         showUpButton(true,Toggle.CLOSE);
     }
@@ -252,7 +287,8 @@ public class HomeActivity extends AppCompatActivity
     public void onSuccess(String listener, final List<Restaurant> response) {
         //showProgress(false);
         //Log.d(TAG, "" + response);
-        adapter = new RestaurantAdapter(HomeActivity.this,response, new RecycleViewItemClickListener() {
+        adapter = new RestaurantAdapter(HomeActivity.this,
+                response, this,new RecycleViewItemClickListener() {
             @Override
             public void OnItemClick(View v, int position) {
                 Restaurant res = response.get(position);
@@ -267,11 +303,23 @@ public class HomeActivity extends AppCompatActivity
 
     }
 
-
+    private void whiteNotificationBar(View view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int flags = view.getSystemUiVisibility();
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            view.setSystemUiVisibility(flags);
+            getWindow().setStatusBarColor(Color.WHITE);
+        }
+    }
 
     @Override
     public void onFailure(String message) {
         //showProgress(false);
 
+    }
+
+    @Override
+    public void onItemSeleced(Restaurant res) {
+        Toast.makeText(getApplicationContext(), "Selected: " + res.getRestaurantName(), Toast.LENGTH_LONG).show();
     }
 }

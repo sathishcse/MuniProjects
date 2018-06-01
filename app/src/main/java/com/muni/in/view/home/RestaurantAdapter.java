@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +33,7 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static android.content.ContentValues.TAG;
 
@@ -38,17 +41,55 @@ import static android.content.ContentValues.TAG;
  * Created by sathish on 8/5/18.
  */
 
-public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.MyViewHolder>{
+public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.MyViewHolder>
+        implements Filterable{
     public List<Restaurant> resList = new ArrayList<>();
+    public List<Restaurant> filterresList = new ArrayList<>();
     private ImageLoader imageLoader;
     private Context context;
+    private searchSelectionListener searchSelectionListener;
     //private int cliked_pos;
     private RecycleViewItemClickListener itemClickListener;
-    public RestaurantAdapter(Context context,List<Restaurant> resList,RecycleViewItemClickListener recycleViewItemClickListener) {
+    public RestaurantAdapter(Context context,List<Restaurant> resList,
+                             searchSelectionListener listener,
+                             RecycleViewItemClickListener recycleViewItemClickListener) {
         this.context = context;
         this.resList = resList;
+        this.filterresList = resList;
+        this.searchSelectionListener = listener;
         imageLoader = ImageLoader.getInstance();
         this.itemClickListener = recycleViewItemClickListener;
+    }
+
+    @Override
+    public Filter getFilter() {
+
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                String str = constraint.toString();
+                if(str.isEmpty()){
+                    filterresList = resList;
+                }else{
+                    List<Restaurant> filter = new ArrayList<>();
+                    for (Restaurant res:resList) {
+                        if(str.contains(res.getRestaurantName())){
+                            filter.add(res);
+                        }
+                    }
+                    filterresList = filter;
+                }
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = filterresList;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                filterresList = (List<Restaurant>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
@@ -66,6 +107,13 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
             resType = (TextView)itemView.findViewById(R.id.resType);
             resAddr = (TextView)itemView.findViewById(R.id.resAddr);
             resStatus = (TextView)itemView.findViewById(R.id.resStatus);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    searchSelectionListener.onItemSeleced(filterresList.get(getAdapterPosition()));
+                }
+            });
         }
 
     }
@@ -141,7 +189,7 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
     }
     @Override
     public int getItemCount() {
-        return resList.size();
+        return filterresList.size();
     }
 
 
@@ -149,5 +197,11 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
         resList.add(res);
 
     }
+
+    interface searchSelectionListener{
+        void onItemSeleced(Restaurant res);
+    }
+
+
 
 }
