@@ -285,7 +285,6 @@ public class RestaurantRegFragment extends Fragment implements View.OnClickListe
                 //Log.d("TAG", "onItemSelected: "+Status);
                 //Toast.makeText(getActivity(),"@@@"+strStatus,Toast.LENGTH_SHORT).show();
                 //Toast.makeText(getActivity(),"***"+strStatus,Toast.LENGTH_SHORT).show();
-
             }
 
             @Override
@@ -405,7 +404,7 @@ public class RestaurantRegFragment extends Fragment implements View.OnClickListe
                 //showProgress(true);
                 requestRestaurant request = new requestRestaurant(strResName,strDesc,strOwner,strBranch,
                         strAddr, strLoc, strContactNo, strCuisines, strResType, strOpentime, strClosetime,
-                        strStatus, strImg,mParam1.getCreateedAt(),mParam1.getLastModifiedAt(),mParam1.getDeletedTimestamp(),sharedpref.getUserId(),sharedpref.getUserId());
+                        strStatus, strImg,sharedpref.getUserId(),sharedpref.getUserId());
                 if(getArguments() == null)
                     new Client(getActivity(), this).addRestaurant(sharedpref.getAccessToken(), request);
                 else
@@ -463,7 +462,7 @@ public class RestaurantRegFragment extends Fragment implements View.OnClickListe
         super.onResume();
 
         if (currentLocation != null) {
-            Log.d("CURRENT LOC", currentLocation.toString());
+            //Log.d("CURRENT LOC", currentLocation.toString());
             String lat = getLatitudeAsDMS(currentLocation,2);
             String lang = getLongitudeAsDMS(currentLocation,2);
             editResLocation.setText(lat + "," + lang);
@@ -544,7 +543,8 @@ public class RestaurantRegFragment extends Fragment implements View.OnClickListe
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            ((HomeActivity) getActivity()).onBackPressed();
+            getActivity().getSupportFragmentManager().popBackStack();
+            ((HomeActivity)getActivity()).showUpButton(false,Toggle.CLOSE);
         }else if(listener.equalsIgnoreCase("updateRes")){
             try {
                 JSONObject jobj = new JSONObject(response);
