@@ -3,9 +3,11 @@ package com.muni.in.view.home;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -30,6 +32,7 @@ import com.muni.in.data.SharedPreference;
 import com.muni.in.model.restaurant.Restaurant;
 import com.muni.in.service.Client;
 import com.muni.in.service.listener.ResponseListener;
+import com.muni.in.utils.AlertDialog;
 import com.muni.in.view.login.LoginActivity;
 import com.muni.in.view.restaurant_onboard.MapFragment;
 import com.muni.in.view.restaurant_onboard.ResDetailsFragment;
@@ -38,7 +41,7 @@ import com.muni.in.view.restaurant_onboard.RestaurantRegFragment;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, ResponseListener {
+        implements NavigationView.OnNavigationItemSelectedListener, ResponseListener,AlertDialog.alertCallback {
 
     private ActionBarDrawerToggle toggle;
     private Toolbar toolbar;
@@ -95,6 +98,14 @@ public class HomeActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
+        Fragment frag = getSupportFragmentManager().findFragmentById(R.id.frag_container);
+        if(frag instanceof RestaurantRegFragment){
+            AlertDialog dialog = new AlertDialog(this,"Alert",
+                    "Are you want to exit from on Board screen",this);
+            dialog.show();
+            return;
+            //Toast.makeText(this,"home close onclick",Toast.LENGTH_SHORT).show();
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -273,5 +284,26 @@ public class HomeActivity extends AppCompatActivity
     public void onFailure(String message) {
         //showProgress(false);
 
+    }
+
+    @Override
+    public void alert(DialogInterface dialog) {
+        dialog.dismiss();
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            int backStackCount = getSupportFragmentManager().getBackStackEntryCount();
+
+            if (backStackCount >= 1) {
+                getSupportFragmentManager().popBackStack();
+                // Change to hamburger icon if at bottom of stack
+                if (backStackCount == 1) {
+                    showUpButton(false,Toggle.CLOSE);
+                }
+            } else {
+                super.onBackPressed();
+            }
+        }
     }
 }

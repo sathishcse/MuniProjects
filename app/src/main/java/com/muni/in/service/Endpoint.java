@@ -8,6 +8,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
@@ -34,7 +35,7 @@ public interface Endpoint {
     @POST("resturants")
     Call<JsonElement> addRestaurant( @Header("Authorization") String authToken, @Body requestRestaurant request);
 
-    @PUT("resturants/{id}")
+    @PATCH("resturants/{id}")
     Call<JsonElement> updateRestaurant(@Header("Authorization") String authTocken,@Body requestRestaurant request,@Path("id") int id);
 
     //@GET("resturants/{id}")

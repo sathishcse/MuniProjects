@@ -33,12 +33,12 @@ public class requestRestaurant {
     String restaurantStatus;
     @SerializedName("image")
     String restaurantImage;
-    @SerializedName("createdAt")
+   /* @SerializedName("createdAt")
     String createedAt;
     @SerializedName("lastModifiedAt")
     String lastModifiedAt;
     @SerializedName("deletedTimeStamp")
-    String deletedTimestamp;
+    String deletedTimestamp;*/
     @SerializedName("createdUser")
     int createdUser;
     @SerializedName("updatedUser")
@@ -47,7 +47,7 @@ public class requestRestaurant {
     public requestRestaurant(String restaurantName,String desc,String owner, String branch, String address, String googleLoc,
                              String contactNo, String cusine, String restaurantType, String openTime,
                              String closeTime, String restaurantStatus, String restaurantImage,
-                             String createdAt,String lastmodified,String deletedtimestamp,int createuser,int updateuser) {
+                            /* String createdAt,String lastmodified,String deletedtimestamp,*/int createuser,int updateuser) {
         this.restaurantName = restaurantName;
         this.description = desc;
         this.ownername = owner;
@@ -61,9 +61,9 @@ public class requestRestaurant {
         this.closeTime = closeTime;
         this.restaurantStatus = restaurantStatus;
         this.restaurantImage = restaurantImage;
-        this.createedAt = createdAt;
-        this.lastModifiedAt = lastmodified;
-        this.deletedTimestamp = deletedtimestamp;
+       // this.createedAt = createdAt;
+       // this.lastModifiedAt = lastmodified;
+        //this.deletedTimestamp = deletedtimestamp;
         this.createdUser = createuser;
         this.updateUser = updateuser;
     }
