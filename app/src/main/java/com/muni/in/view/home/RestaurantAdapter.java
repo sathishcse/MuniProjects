@@ -48,17 +48,14 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
     private ImageLoader imageLoader;
     private Context context;
     private searchSelectionListener searchSelectionListener;
-    //private int cliked_pos;
-    private RecycleViewItemClickListener itemClickListener;
+
     public RestaurantAdapter(Context context,List<Restaurant> resList,
-                             searchSelectionListener listener,
-                             RecycleViewItemClickListener recycleViewItemClickListener) {
+                             searchSelectionListener listener) {
         this.context = context;
         this.resList = resList;
         this.filterresList = resList;
         this.searchSelectionListener = listener;
         imageLoader = ImageLoader.getInstance();
-        this.itemClickListener = recycleViewItemClickListener;
     }
 
     @Override
@@ -73,7 +70,7 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
                 }else{
                     List<Restaurant> filter = new ArrayList<>();
                     for (Restaurant res:resList) {
-                        if(str.contains(res.getRestaurantName())){
+                        if(res.getRestaurantName().toLowerCase().contains(str.toLowerCase())){
                             filter.add(res);
                         }
                     }
@@ -107,13 +104,6 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
             resType = (TextView)itemView.findViewById(R.id.resType);
             resAddr = (TextView)itemView.findViewById(R.id.resAddr);
             resStatus = (TextView)itemView.findViewById(R.id.resStatus);
-
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    searchSelectionListener.onItemSeleced(filterresList.get(getAdapterPosition()));
-                }
-            });
         }
 
     }
@@ -125,7 +115,8 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                itemClickListener.OnItemClick(v,myViewHolder.getAdapterPosition());
+                searchSelectionListener.onItemSeleced(
+                        filterresList.get(myViewHolder.getAdapterPosition()));
             }
         });
         return myViewHolder;
@@ -134,12 +125,11 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position) {
-        Restaurant restaurant = resList.get(position);
+        Restaurant restaurant = filterresList.get(position);
         holder.cardView.setTag(position);
         holder.resName.setText(restaurant.getRestaurantName());
         holder.resType.setText(restaurant.getRestaurantType());
         holder.resAddr.setText(restaurant.getAddress());
-       // RestaurantStatus status = RestaurantStatus.values()[Integer.parseInt(restaurant.getRestaurantStatus())];
         holder.resStatus.setText(RestaurantStatus.getStatus(restaurant.getRestaurantStatus()));
         DisplayImageOptions options = new DisplayImageOptions.Builder()
                 .showImageOnLoading(R.drawable.ic_restaurant) // resource or drawable
@@ -189,7 +179,10 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
     }
     @Override
     public int getItemCount() {
-        return filterresList.size();
+        if(filterresList != null)
+            return filterresList.size();
+        else
+            return 0;
     }
 
 

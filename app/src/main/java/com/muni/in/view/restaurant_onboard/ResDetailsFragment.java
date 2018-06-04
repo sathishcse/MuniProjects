@@ -138,7 +138,7 @@ public class ResDetailsFragment extends Fragment implements ResponseListener{
                 FragmentTransaction transaction = ((HomeActivity)getActivity()).getSupportFragmentManager().beginTransaction();
                 transaction.setCustomAnimations(R.anim.slide_enter, R.anim.slide_exit, R.anim.slide_reverse_exit, R.anim.slide_reverse_enter);
                 transaction.replace(R.id.frag_container, RestaurantRegFragment.newInstance(mParam1,
-                        mParam2), "Reg").addToBackStack(null).commit();
+                        mParam1.getRestaurantId()), "Reg").addToBackStack(null).commit();
                 break;
         }
         return super.onOptionsItemSelected(item);

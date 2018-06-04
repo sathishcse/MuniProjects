@@ -143,14 +143,16 @@ public class HomeActivity extends AppCompatActivity
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
+                   // Log.d(TAG,"***"+query);
                     adapter.getFilter().filter(query);
-                    return false;
+                    return true;
                 }
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
+                    //Log.d(TAG,"***"+newText);
                     adapter.getFilter().filter(newText);
-                    return false;
+                    return true;
                 }
             });
         }
@@ -213,13 +215,6 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void replaceFragment() {
-        /**
-         * Your fragment replacement logic goes here
-         * e.g.
-         * FragmentTransaction ft = getFragmentManager().beginTransaction();
-         * String tag = "MyFragment";
-         * ft.replace(R.id.content, MyFragment.newInstance(tag), tag).addToBackStack(null).commit();
-         */
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.setCustomAnimations(R.anim.slide_enter, R.anim.slide_exit, R.anim.slide_reverse_exit, R.anim.slide_reverse_enter);
         transaction.replace(R.id.frag_container, new RestaurantRegFragment(), "Myfrag").addToBackStack(null).commit();
@@ -288,17 +283,7 @@ public class HomeActivity extends AppCompatActivity
         //showProgress(false);
         //Log.d(TAG, "" + response);
         adapter = new RestaurantAdapter(HomeActivity.this,
-                response, this,new RecycleViewItemClickListener() {
-            @Override
-            public void OnItemClick(View v, int position) {
-                Restaurant res = response.get(position);
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.setCustomAnimations(R.anim.slide_enter, R.anim.slide_exit, R.anim.slide_reverse_exit, R.anim.slide_reverse_enter);
-                transaction.add(R.id.frag_container, ResDetailsFragment.newInstance(res,
-                        ""+position), "ResDetails").addToBackStack(null).commit();
-                //Toast.makeText(HomeActivity.this,"Adapter pos"+res.getRestaurantName(),Toast.LENGTH_SHORT).show();
-            }
-        });
+                response, this);
         restaurantRecycleView.setAdapter(adapter);
 
     }
@@ -320,6 +305,10 @@ public class HomeActivity extends AppCompatActivity
 
     @Override
     public void onItemSeleced(Restaurant res) {
-        Toast.makeText(getApplicationContext(), "Selected: " + res.getRestaurantName(), Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), "Selected: " + res.getRestaurantName(), Toast.LENGTH_LONG).show();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.slide_enter, R.anim.slide_exit, R.anim.slide_reverse_exit, R.anim.slide_reverse_enter);
+        transaction.add(R.id.frag_container, ResDetailsFragment.newInstance(res,
+                ""), "ResDetails").addToBackStack(null).commit();
     }
 }
