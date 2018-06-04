@@ -25,6 +25,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
+    <string name="search_hint">Search</string>
     <!-- Reg form string -->
     <string name="res_name">Restaurant Name</string>
     <string name="res_branch">Branch</string>

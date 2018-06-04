@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +33,7 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static android.content.ContentValues.TAG;
 
@@ -38,17 +41,52 @@ import static android.content.ContentValues.TAG;
  * Created by sathish on 8/5/18.
  */
 
-public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.MyViewHolder>{
+public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.MyViewHolder>
+        implements Filterable{
     public List<Restaurant> resList = new ArrayList<>();
+    public List<Restaurant> filterresList = new ArrayList<>();
     private ImageLoader imageLoader;
     private Context context;
-    //private int cliked_pos;
-    private RecycleViewItemClickListener itemClickListener;
-    public RestaurantAdapter(Context context,List<Restaurant> resList,RecycleViewItemClickListener recycleViewItemClickListener) {
+    private searchSelectionListener searchSelectionListener;
+
+    public RestaurantAdapter(Context context,List<Restaurant> resList,
+                             searchSelectionListener listener) {
         this.context = context;
         this.resList = resList;
+        this.filterresList = resList;
+        this.searchSelectionListener = listener;
         imageLoader = ImageLoader.getInstance();
-        this.itemClickListener = recycleViewItemClickListener;
+    }
+
+    @Override
+    public Filter getFilter() {
+
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                String str = constraint.toString();
+                if(str.isEmpty()){
+                    filterresList = resList;
+                }else{
+                    List<Restaurant> filter = new ArrayList<>();
+                    for (Restaurant res:resList) {
+                        if(res.getRestaurantName().toLowerCase().contains(str.toLowerCase())){
+                            filter.add(res);
+                        }
+                    }
+                    filterresList = filter;
+                }
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = filterresList;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                filterresList = (List<Restaurant>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
@@ -77,7 +115,8 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                itemClickListener.OnItemClick(v,myViewHolder.getAdapterPosition());
+                searchSelectionListener.onItemSeleced(
+                        filterresList.get(myViewHolder.getAdapterPosition()));
             }
         });
         return myViewHolder;
@@ -86,12 +125,11 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position) {
-        Restaurant restaurant = resList.get(position);
+        Restaurant restaurant = filterresList.get(position);
         holder.cardView.setTag(position);
         holder.resName.setText(restaurant.getRestaurantName());
         holder.resType.setText(restaurant.getRestaurantType());
         holder.resAddr.setText(restaurant.getAddress());
-       // RestaurantStatus status = RestaurantStatus.values()[Integer.parseInt(restaurant.getRestaurantStatus())];
         holder.resStatus.setText(RestaurantStatus.getStatus(restaurant.getRestaurantStatus()));
         DisplayImageOptions options = new DisplayImageOptions.Builder()
                 .showImageOnLoading(R.drawable.ic_restaurant) // resource or drawable
@@ -141,7 +179,10 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
     }
     @Override
     public int getItemCount() {
-        return resList.size();
+        if(filterresList != null)
+            return filterresList.size();
+        else
+            return 0;
     }
 
 
@@ -149,5 +190,11 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.My
         resList.add(res);
 
     }
+
+    interface searchSelectionListener{
+        void onItemSeleced(Restaurant res);
+    }
+
+
 
 }
